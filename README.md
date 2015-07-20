@@ -1,9 +1,3 @@
-# A Template for d3 visualizations: 
+# Let's Learn Some Probability Distributions!
 
-I spend way to much time setting up the actual environment for each visualization I make. 
-
-## Includes: 
-- D3
-- Bootstrap
-- My google tracking code
-- JQuery
+I am way too lazy to write a robust readme at this point.
