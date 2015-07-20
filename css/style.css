@@ -1,0 +1,13 @@
+body {
+  font-family: optima;
+}
+
+.variableSlider {
+    padding-top: 20px;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
