@@ -79,7 +79,10 @@ svg.selectAll(".distribution")
     .style("stroke-width", 2)
     .style("stroke", "steelblue");
 
-function makeSlider(name, v, start, end){
+
+//Work on getting the sliders to automatically generate:
+
+function makeSlider(name, val, low, high, onInput){
 
     var div = d3.select("#menu")
         .append("div")
@@ -92,11 +95,30 @@ function makeSlider(name, v, start, end){
     div.append("input")
         .attr("type", "range")
         .attr("id", name)
-        .attr("min", start)
-        .attr("max", end)
-        .attr("value", v)
-        .attr("step", (end - start)/100)
-        .attr("oninput", "updateLine(xs, logistic, value, theta)")
+        .attr("min", low)
+        .attr("max", high)
+        .attr("value", val)
+        .attr("step", (high - low)/100)
+        .attr("oninput", onInput)
 }
+var params;
+var sampleParams = [
+    {"name": "Alpha", "startVal": 1,  "slideLow": .1, "slideHigh":4 },
+    {"name": "Beta" , "startVal": 2,  "slideLow": .2, "slideHigh":5 },
+    {"name": "Gamma", "startVal": 3,  "slideLow": .3, "slideHigh":6 }
+]
 
-makeSlider("Mu", mu ,0.01, 4)
+// generates the string that goes into the onInput attribute of the input slider.
+function makeOnInput(params, equation, loc){
+    var call = "updateLine(xs," + equation;
+
+    for (var i = 0; i < params.length; i++){
+        if (i == loc){ //put value in so the slider can give its value for the working parameter.
+            call = call + ", value"
+        } else {
+            call = call + ", params[" + i + "]"
+        }
+    }
+    call = call + ")"
+    return call;
+}
