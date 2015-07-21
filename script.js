@@ -18,13 +18,13 @@ var svg = d3.select("#viz").append("svg")
 
 //variables for the logistic distribtion
 var theta = 0.5,
-    mu = 0.4;
+    mu    = 0.4;
 
 //Logistic Distributions
 var logistic = function(x, m, t) {
     // var mu = 0;
     var y =  (1 / (Math.sqrt(2 * Math.PI) * t)) * (1 / x) *
-        Math.exp(-Math.pow((Math.log(x) - m), 2) / (2 * Math.pow(t, 2)))
+        Math.exp(-Math.pow((Math.log(x) - m), 2) / (2 * Math.pow(t, 2)));
     return y;
 }
 
@@ -45,7 +45,8 @@ var line = d3.svg.line()
     .x(function(d) { return x(d.x); })
     .y(function(d) { return y(d.y); });
 
-function aLine(xVal, equation,m, t){
+function aLine(xVal, equation, m, t){
+    console.log("t " + t + ", m " + m)
     return _.map(xVal, function(x) {
         return { "x": x, "y": equation(x, m, t) }
  })
@@ -54,8 +55,6 @@ function aLine(xVal, equation,m, t){
 function updateLine(x, equation, m, t){
     mu = m
     theta = t
-
-    console.log("t " + t + ", m " + m)
 
     var newLine = [aLine(x, equation, m, t)]
 
@@ -68,7 +67,7 @@ function updateLine(x, equation, m, t){
 }
 
 var xs = _.range(0.01, 5, .07)
-var lineData = [aLine(xs, logistic, theta, mu)]
+var lineData = [aLine(xs, logistic, mu, theta)]
 
 // The actual drawing part:
 svg.selectAll(".distribution")
@@ -80,7 +79,7 @@ svg.selectAll(".distribution")
     .style("stroke-width", 2)
     .style("stroke", "steelblue");
 
-function makeSlider(name, start, end){
+function makeSlider(name, v, start, end){
 
     var div = d3.select("#menu")
         .append("div")
@@ -95,9 +94,9 @@ function makeSlider(name, start, end){
         .attr("id", name)
         .attr("min", start)
         .attr("max", end)
-        .attr("value", (end - start)/2)
+        .attr("value", v)
         .attr("step", (end - start)/100)
-        .attr("oninput", "updateLine(xs,logistic,value, theta)")
+        .attr("oninput", "updateLine(xs, logistic, value, theta)")
 }
 
-makeSlider("Mu", 0.01, 4)
+makeSlider("Mu", mu ,0.01, 4)
