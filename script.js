@@ -7,7 +7,11 @@ var theDistributions = {
     "logistic": {"equation"  : logistic, //this needs to be defined in the code.
                  "parameters": ["mu", "theta"], //names of the parameters
                  "starting"  : [0.5, 0.3], //what we start them out at.
-                 "plusMinus" : [.4, .2]} //how far around the starting values we can go.
+                 "plusMinus" : [.4, .2],
+                 "sliderInfo": [
+                     {"name": "Theta", "startVal": 1,  "slideLow": .1, "slideHigh":4 },
+                     {"name": "Mu" , "startVal": 2,  "slideLow": .2, "slideHigh":5 }
+                 ]} //how far around the starting values we can go.
 }
 
 // ----------------------------------------------------------------------------------------
@@ -115,7 +119,8 @@ function updateLine(x, equation, params){
 
 var xs = _.range(0.01, 5, .07)
 
-var params = theDistributions.logistic.starting;
+//remove this later
+params = theDistributions["logistic"].starting;
 
 var lineData = [aLine(xs, logistic, params)]
 
@@ -164,19 +169,19 @@ var logisticParams = [
     {"name": "Mu" , "startVal": 2,  "slideLow": .2, "slideHigh":5 }
 ]
 
-
 // generates the string that goes into the onInput attribute of the input slider.
 function makeOnInput(params, equation, loc){
-    var call = "updateLine(xs," + equation;
+    var call = "updateLine(xs, " + equation + ",[";
 
     for (var i = 0; i < params.length; i++){
+        if (i > 0) call = call + ","; //put the parenthesis for the first but not anything else.
         if (i == loc){ //put value in so the slider can give its value for the working parameter.
-            call = call + ", value"
+            call = call + " value"
         } else {
-            call = call + ", params[" + i + "]"
+            call = call + " params[" + i + "]"
         }
     }
-    call = call + ")"
+    call = call + " ])"
     return call;
 }
 
@@ -188,5 +193,8 @@ function drawSliders(params, functionName){
 }
 
 function initializeDist(dist){
-    var foo = "bar"
-}
+    var entry = theDistributions[dist]
+    params = entry.starting; //update the parameters to the distributions.
+    drawSliders(entry.sliderInfo, dist) //draw the sliders
+    updateLine(xs, logistic, params) //logistic shouldent by hard coded.
+}                                    //Find a way to store the equation in the javascript object.
