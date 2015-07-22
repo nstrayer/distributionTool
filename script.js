@@ -2,21 +2,52 @@
 // appreciate the world of probability distributions.
 // Made by Nick Strayer.
 
+// ----------------------------------------------------------------------------------------
+// Where all the distribution functions go.
+// ----------------------------------------------------------------------------------------
+
+//A flat line, for starting the distribution
+var flat = function(x, params){
+    return 0.1
+}
+
+//Logistic Distribution, new version.
+var logistic = function(x, params) {
+
+    var t = params[0],
+        m = params[1];
+
+    var y =  (1 / (Math.sqrt(2 * Math.PI) * t)) * (1 / x) *
+        Math.exp(-Math.pow((Math.log(x) - m), 2) / (2 * Math.pow(t, 2)));
+    return y;
+}
+
+//Normal or Gaussian Distribution.
+var normal = function(x, params){
+
+    var m  = params[0],
+        sd = params[1];
+
+    return (1 / (sd * Math.sqrt(2*Math.PI))) * (Math.exp( -(Math.pow(x - m, 2))/(2*sd*sd)  ))
+}
+
 //Where we store all the neccesary info about the given distributions.
 var theDistributions = {
-    "logistic": {"equation"  : logistic, //this needs to be defined in the code.
-                 "parameters": ["mu", "theta"], //names of the parameters
-                 "starting"  : [0.5, 0.3], //what we start them out at.
-                 "plusMinus" : [.4, .2],
-                 "sliderInfo": [
-                     {"name": "Theta", "startVal": 1,  "slideLow": .1, "slideHigh":4 },
-                     {"name": "Mu" , "startVal": 2,  "slideLow": .2, "slideHigh":5 }
+    "logistic": {equation  : function(x, params) {return logistic(x,params)}, //this needs to be defined in the code.
+                 starting  : [0.5, 0.3], //what we start them out at.
+                 paramInfo : [
+                     {"name": "Theta", "startVal": 0.5,  "slideLow": .1, "slideHigh":1 },
+                     {"name": "Mu"   , "startVal": 0.3,  "slideLow": .1, "slideHigh":2 }
                  ]} //how far around the starting values we can go.
 }
 
 // ----------------------------------------------------------------------------------------
 // All the usual d3 setup stuff.
 // ----------------------------------------------------------------------------------------
+
+var params = []; //initialize the parameters variable.
+
+var xs = _.range(0.01, 5, .07) //this will need to be made customizable by disribution.
 
 var width  = parseInt(d3.select("#viz").style("width").slice(0, -2)),
     height = $(window).height() - 150;
@@ -38,73 +69,14 @@ var line = d3.svg.line()
     .x(function(d) { return x(d.x); })
     .y(function(d) { return y(d.y); });
 
-//variables for the logistic distribtion this stuff will need to go soon.
-var theta = 0.5,
-    mu    = 0.4,
-    params; //initialize the vector that holds the parameters for a given distribution.
-
-// ----------------------------------------------------------------------------------------
-// Where all the distribution functions go.
-// ----------------------------------------------------------------------------------------
-
-// //Logistic Distribution
-// var logistic = function(x, m, t) {
-//     // var mu = 0;
-//     var y =  (1 / (Math.sqrt(2 * Math.PI) * t)) * (1 / x) *
-//         Math.exp(-Math.pow((Math.log(x) - m), 2) / (2 * Math.pow(t, 2)));
-//     return y;
-// }
-
-//Logistic Distribution, new version.
-var logistic = function(x, params) {
-
-    var m = params[0],
-        t = params[1];
-
-    var y =  (1 / (Math.sqrt(2 * Math.PI) * t)) * (1 / x) *
-        Math.exp(-Math.pow((Math.log(x) - m), 2) / (2 * Math.pow(t, 2)));
-    return y;
-}
-
-//Normal or Gaussian Distribution.
-var normal = function(x, params){
-
-    var m  = params[0],
-        sd = params[1];
-
-    return (1 / (sd * Math.sqrt(2*Math.PI))) * (Math.exp( -(Math.pow(x - m, 2))/(2*sd*sd)  ))
-}
-
-// //Function to generate the lines. This will need to be changed to take arbitrary params.
-// function aLine(xVal, equation, m, t){
-//     console.log("t " + t + ", m " + m)
-//     return _.map(xVal, function(x) {
-//         return { "x": x, "y": equation(x, m, t) }
-//  })
-// }
-
-//new version
+//Convert x and the function into a format d3 likes.
 function aLine(xVal, equation, params){
     return _.map(xVal, function(x) {
         return { "x": x, "y": equation(x,params) }
  })
 }
 
-// function updateLine(x, equation, m, t){
-//     mu = m
-//     theta = t
-//
-//     var newLine = [aLine(x, equation, m, t)]
-//
-//     svg.selectAll(".distribution")
-//         .data(newLine)
-//         .transition()
-//         .duration(1500)
-//         .attr("class", "distribution")
-//         .attr("d", line);
-// }
-
-//new version
+//Update the already drawn line on the screen.
 function updateLine(x, equation, params){
 
     var newLine = [aLine(x, equation, params)]
@@ -117,12 +89,7 @@ function updateLine(x, equation, params){
         .attr("d", line);
 }
 
-var xs = _.range(0.01, 5, .07)
-
-//remove this later
-params = theDistributions["logistic"].starting;
-
-var lineData = [aLine(xs, logistic, params)]
+var lineData = [aLine(xs, flat, params)]
 
 // The actual drawing part:
 svg.selectAll(".distribution")
@@ -158,17 +125,6 @@ function makeSlider(name, val, low, high, onInput){
         .attr("oninput", onInput)
 }
 
-var sampleParams = [
-    {"name": "Alpha", "startVal": 1,  "slideLow": .1, "slideHigh":4 },
-    {"name": "Beta" , "startVal": 2,  "slideLow": .2, "slideHigh":5 },
-    {"name": "Gamma", "startVal": 3,  "slideLow": .3, "slideHigh":6 }
-]
-
-var logisticParams = [
-    {"name": "Theta", "startVal": 1,  "slideLow": .1, "slideHigh":4 },
-    {"name": "Mu" , "startVal": 2,  "slideLow": .2, "slideHigh":5 }
-]
-
 // generates the string that goes into the onInput attribute of the input slider.
 function makeOnInput(params, equation, loc){
     var call = "updateLine(xs, " + equation + ",[";
@@ -195,6 +151,6 @@ function drawSliders(params, functionName){
 function initializeDist(dist){
     var entry = theDistributions[dist]
     params = entry.starting; //update the parameters to the distributions.
-    drawSliders(entry.sliderInfo, dist) //draw the sliders
-    updateLine(xs, logistic, params) //logistic shouldent by hard coded.
+    drawSliders(entry.paramInfo, dist) //draw the sliders
+    updateLine(xs, entry.equation, params) //logistic shouldent by hard coded.
 }                                    //Find a way to store the equation in the javascript object.
