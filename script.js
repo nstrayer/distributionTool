@@ -43,24 +43,24 @@ var theta = 0.5,
 // Where all the distribution functions go.
 // ----------------------------------------------------------------------------------------
 
-//Logistic Distribution
-var logistic = function(x, m, t) {
-    // var mu = 0;
-    var y =  (1 / (Math.sqrt(2 * Math.PI) * t)) * (1 / x) *
-        Math.exp(-Math.pow((Math.log(x) - m), 2) / (2 * Math.pow(t, 2)));
-    return y;
-}
-
-// //Logistic Distribution, new version.
-// var logistic = function(x, params) {
-//
-//     var mu    = params[0],
-//         theta = params[1];
-//
+// //Logistic Distribution
+// var logistic = function(x, m, t) {
+//     // var mu = 0;
 //     var y =  (1 / (Math.sqrt(2 * Math.PI) * t)) * (1 / x) *
 //         Math.exp(-Math.pow((Math.log(x) - m), 2) / (2 * Math.pow(t, 2)));
 //     return y;
 // }
+
+//Logistic Distribution, new version.
+var logistic = function(x, params) {
+
+    var m = params[0],
+        t = params[1];
+
+    var y =  (1 / (Math.sqrt(2 * Math.PI) * t)) * (1 / x) *
+        Math.exp(-Math.pow((Math.log(x) - m), 2) / (2 * Math.pow(t, 2)));
+    return y;
+}
 
 //Normal or Gaussian Distribution.
 var normal = function(x, params){
@@ -71,26 +71,39 @@ var normal = function(x, params){
     return (1 / (sd * Math.sqrt(2*Math.PI))) * (Math.exp( -(Math.pow(x - m, 2))/(2*sd*sd)  ))
 }
 
-//Function to generate the lines. This will need to be changed to take arbitrary params.
-function aLine(xVal, equation, m, t){
-    console.log("t " + t + ", m " + m)
-    return _.map(xVal, function(x) {
-        return { "x": x, "y": equation(x, m, t) }
- })
-}
-
-// //new version
-// function aLine(xVal, equation, params){
+// //Function to generate the lines. This will need to be changed to take arbitrary params.
+// function aLine(xVal, equation, m, t){
+//     console.log("t " + t + ", m " + m)
 //     return _.map(xVal, function(x) {
-//         return { "x": x, "y": equation(x,params) }
+//         return { "x": x, "y": equation(x, m, t) }
 //  })
 // }
 
-function updateLine(x, equation, m, t){
-    mu = m
-    theta = t
+//new version
+function aLine(xVal, equation, params){
+    return _.map(xVal, function(x) {
+        return { "x": x, "y": equation(x,params) }
+ })
+}
 
-    var newLine = [aLine(x, equation, m, t)]
+// function updateLine(x, equation, m, t){
+//     mu = m
+//     theta = t
+//
+//     var newLine = [aLine(x, equation, m, t)]
+//
+//     svg.selectAll(".distribution")
+//         .data(newLine)
+//         .transition()
+//         .duration(1500)
+//         .attr("class", "distribution")
+//         .attr("d", line);
+// }
+
+//new version
+function updateLine(x, equation, params){
+
+    var newLine = [aLine(x, equation, params)]
 
     svg.selectAll(".distribution")
         .data(newLine)
@@ -101,7 +114,10 @@ function updateLine(x, equation, m, t){
 }
 
 var xs = _.range(0.01, 5, .07)
-var lineData = [aLine(xs, logistic, mu, theta)]
+
+var params = theDistributions.logistic.starting;
+
+var lineData = [aLine(xs, logistic, params)]
 
 // The actual drawing part:
 svg.selectAll(".distribution")
