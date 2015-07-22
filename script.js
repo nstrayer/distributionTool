@@ -154,3 +154,8 @@ function initializeDist(dist){
     drawSliders(entry.paramInfo, dist) //draw the sliders
     updateLine(xs, entry.equation, params) //logistic shouldent by hard coded.
 }                                    //Find a way to store the equation in the javascript object.
+
+
+window.setTimeout(function(){
+    initializeDist("logistic") //Just added this so it starts up alright before adding the interface.
+}, 1000)
