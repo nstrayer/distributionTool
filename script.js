@@ -77,8 +77,9 @@ function aLine(xVal, equation, params){
 }
 
 //Update the already drawn line on the screen.
-function updateLine(x, equation, params){
-
+function updateLine(x, equation, p){
+    console.log(params)
+    params = p
     var newLine = [aLine(x, equation, params)]
 
     svg.selectAll(".distribution")
