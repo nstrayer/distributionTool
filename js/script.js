@@ -8,7 +8,7 @@
 
 //A flat line, for starting the distribution
 var flat = function(x, params){
-    return 0.1
+    return .001
 }
 
 //Logistic Distribution, new version.
@@ -101,8 +101,8 @@ function updateAxes(){
 
 //Update the already drawn line on the screen.
 function updateLine(x, equation, p){
-    console.log(params)
-    params = p
+    params = p //update the params variable globaly.
+    
     var newLine = [aLine(x, equation, params)]
 
     svg.selectAll(".distribution")
