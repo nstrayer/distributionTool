@@ -57,10 +57,10 @@ var theDistributions = {
 
 var params = []; //initialize the parameters variable.
 
-var xs = _.range(0, 10, 9.99/500) //this will need to be made customizable by disribution.
+var xs = _.range(0, 10, 10/500) //this will need to be made customizable by disribution.
 
-var width  = parseInt(d3.select("#viz").style("width").slice(0, -2)) - 40,
-    height = $(window).height() - 150,
+var width   = parseInt(d3.select("#viz").style("width").slice(0, -2)) - 40,
+    height  = $(window).height() - 150,
     padding = 20;
 
 var svg = d3.select("#viz").append("svg")
@@ -102,7 +102,7 @@ function updateAxes(){
 //Update the already drawn line on the screen.
 function updateLine(x, equation, p){
     params = p //update the params variable globaly.
-    
+
     var newLine = [aLine(x, equation, params)]
 
     svg.selectAll(".distribution")
@@ -169,11 +169,14 @@ function initializeDist(dist){
     x.domain(entry.xRange)
     updateAxes()
 
-    xs = _.range(entry.xRange[0], entry.xRange[1], (entry.xRange[1] - entry.xRange[0])/500) //redo the xs.
+    var start = entry.xRange[0],
+        end = entry.xRange[1];
+        step = (end - start)/500
+    xs = _.range(start, end + step , step) //redo the xs. Adding a step brings it to the right point because of how range works.
     params = entry.starting; //update the parameters to the distributions.
     drawSliders(entry.paramInfo, dist) //draw the sliders
-    updateLine(xs, entry.equation, params) //logistic shouldent by hard coded.
-}                                    //Find a way to store the equation in the javascript object.
+    updateLine(xs, entry.equation, params)
+}
 
 
 //--------------------------------------------------------------------------------------------------------------
