@@ -1,55 +1,70 @@
-var width = parseInt(d3.select("body").style("width").slice(0, -2)),
-    height = $(window).height() - 30,
-    padding = 20,
-    numOfLines = 20,
-    xs = _.range(0.01, 5, .07),
-    colors = ['rgb(165,0,38)', 'rgb(215,48,39)', 'rgb(244,109,67)', 'rgb(253,174,97)', 'rgb(254,224,144)',
-        'rgb(224,243,248)', 'rgb(171,217,233)', 'rgb(116,173,209)', 'rgb(69,117,180)', 'rgb(49,54,149)'
-    ];
+// Script for a simple tool built using only d3 to help users interact with, explore and generally
+// appreciate the world of probability distributions.
+// Made by Nick Strayer.
 
-var logistic = function(x, theta, i) {
-    var mu = 0.1;
-    sign = 1
-    var y = sign * (1 / (Math.sqrt(2 * Math.PI) * theta)) * (1 / x) *
-        Math.exp(-Math.pow((Math.log(x) - mu), 2) / (2 * Math.pow(theta, 2)))
+// ----------------------------------------------------------------------------------------
+// Where all the distribution functions go.
+// ----------------------------------------------------------------------------------------
+
+//A flat line, for starting the distribution
+var flat = function(x, params){
+    return 0.1
+}
+
+//Logistic Distribution, new version.
+var logistic = function(x, params) {
+
+    var t = params[0],
+        m = params[1];
+
+    var y =  (1 / (Math.sqrt(2 * Math.PI) * t)) * (1 / x) *
+        Math.exp(-Math.pow((Math.log(x) - m), 2) / (2 * Math.pow(t, 2)));
     return y;
 }
 
-var animatelines = function(whichline) {
-    d3.selectAll(".line").style("opacity","0.5");
+//Normal or Gaussian Distribution.
+var normal = function(x, params){
 
-    //Select All of the lines and process them one by one
-    d3.selectAll(".line").each(function(d,i){
+    var m  = params[0],
+        sd = params[1];
 
-    // Get the length of each line in turn
-    var totalLength = d3.select("#line" + i).node().getTotalLength();
-
-	d3.selectAll("#line" + i).attr("stroke-dasharray", totalLength + " " + totalLength)
-	  .attr("stroke-dashoffset", totalLength)
-	  .transition()
-	  .duration(5000)
-	  .delay(100*i)
-	  .ease("quad") //Try linear, quad, bounce... see other examples here - http://bl.ocks.org/hunzy/9929724
-	  .attr("stroke-dashoffset", 0)
-	  .style("stroke-width",2)
-    })
-
-    intro
-        .transition()
-        .duration(800)
-        .attr("fill-opacity", 0)
-        .remove()
+    return (1 / (sd * Math.sqrt(2*Math.PI))) * (Math.exp( -(Math.pow(x - m, 2))/(2*sd*sd)  ))
 }
 
-// The Scales:
-var thetaMap = d3.scale.linear() //name the values from 0 to 20 and make their values from .1-.7
-    .domain([0, numOfLines])
-    .range([0.8, 0.085])
+//Where we store all the neccesary info about the given distributions.
+var theDistributions = {
+    "logistic": {
+        equation: function(x, params) { return logistic(x, params) },
+        starting: [0.5, 0.3], //what we start them out at.
+        paramInfo: [{ "name": "Theta", "startVal": 0.5, "slideLow": .1, "slideHigh": 1 },
+                    { "name": "Mu", "startVal": 0.3, "slideLow": .01, "slideHigh": 1 }],
+        xRange: [0.01, 6],
+        yMax: 3.5
+    },
+    "normal": {
+        equation: function(x, params) { return normal(x, params) },
+        starting: [0, 1], //what we start them out at.
+        paramInfo: [{ "name": "Mu", "startVal": 0, "slideLow": -3, "slideHigh": 3 },
+                    { "name": "Sd", "startVal": 1, "slideLow": .1, "slideHigh": 3 }],
+        xRange: [-4, 4],
+        yMax: 1.5
+    } //how far around the starting values we can go. //how far around the starting values we can go.
+}
 
-var yPos = d3.scale.linear() //scalling for creating horizontal lines
-    .domain([0, numOfLines])
-    .range([0, 4])
-    //.range([-4, 4])
+// ----------------------------------------------------------------------------------------
+// All the usual d3 setup stuff.
+// ----------------------------------------------------------------------------------------
+
+var params = []; //initialize the parameters variable.
+
+var xs = _.range(0.01, 10, 9.99/500) //this will need to be made customizable by disribution.
+
+var width  = parseInt(d3.select("#viz").style("width").slice(0, -2)),
+    height = $(window).height() - 150;
+
+var svg = d3.select("#viz").append("svg")
+    .attr("height", height)
+    .attr("width", width)
 
 var x = d3.scale.linear()
     .domain([0, 5])
@@ -57,118 +72,111 @@ var x = d3.scale.linear()
 
 var y = d3.scale.linear()
     .domain([0, 4])
-    //.domain([-5, 5])
     .range([height, 0]);
 
-// The line data:
-var logistic = _.map(d3.range(numOfLines), function(i) {
-    var odd = true
-        // if (i % 2 !== 0) {
-        //     odd = false
-        //     i = i - 1
-        // }
-    var toReturn = _.map(xs, function(num) {
-        var sign = -1
-        if (odd) {
-            sign = 1
-        }
-        return {
-            "x": num,
-            "y": sign * logistic(num, thetaMap(i), i)
-        }
-    })
-
-    return toReturn;
-})
-
-var horizontal = _.map(d3.range(numOfLines), function(i) {
-    toReturn = _.map(xs, function(num) {
-        return {
-            "x": num,
-            "y": yPos(i)
-        }
-    })
-
-    return toReturn;
-})
-
-// The d3 stuff
 var line = d3.svg.line()
     .interpolate("basis")
-    .x(function(d) {
-        return x(d.x);
-    })
-    .y(function(d) {
-        return y(d.y);
-    });
+    .x(function(d) { return x(d.x); })
+    .y(function(d) { return y(d.y); });
 
-var svg = d3.select("#intro").append("svg")
-    .attr("width", width)
-    .attr("height", height + 2 * padding)
-    .append("g")
+//Convert x and the function into a format d3 likes.
+function aLine(xVal, equation, params){
+    return _.map(xVal, function(x) {
+        return { "x": x, "y": equation(x,params) }
+ })
+}
 
-var title = svg.append("text")
-    .text("hi")
-    .attr("font-size", 40)
-    .attr("font-family", "optima")
-    .attr("text-anchor", "end")
-    .attr("fill-opacity", 0.0)
-    .attr("x", x(4.7))
-    .attr("y", y(2.5))
+//Update the already drawn line on the screen.
+function updateLine(x, equation, p){
+    console.log(params)
+    params = p
+    var newLine = [aLine(x, equation, params)]
 
-
-function change(newData) {
-    svg.selectAll(".line")
-        .data(newData)
+    svg.selectAll(".distribution")
+        .data(newLine)
         .transition()
         .duration(1500)
-        .delay(function(d, i) {
-            return 70 * i
-        })
-        .attr("class", "line")
+        .attr("class", "distribution")
         .attr("d", line);
-
-    title
-        .transition()
-        .duration(4000)
-        .attr("fill-opacity", 1)
-
-    intro
-        .transition()
-        .duration(800)
-        .attr("fill-opacity", 0)
-        .remove()
-
 }
 
+var lineData = [aLine(xs, flat, params)]
 
-svg.selectAll(".line")
-    .data(logistic)
+// The actual drawing part:
+svg.selectAll(".distribution")
+    .data(lineData)
     .enter().append("path")
-    .attr("class", "line")
-    .attr("id" , function(d, i){ return "line" + i;})
+    .attr("class", "distribution")
     .attr("d", line)
+    .style("fill", "none")
     .style("stroke-width", 2)
-    .style("stroke", function(d, i) {
-        return colors[i % 10]
-    })
-    .style("opacity", 0)
+    .style("stroke", "steelblue");
 
-d3.select("svg")
-    .on("click", function() {
-        // change(logistic)
-        animatelines(2)
-    })
 
-var introMessage = "Click"
-if (isMobile) {
-    introMessage = "Tap"
+//Work on getting the sliders to automatically generate:
+
+//Generates a single slider.
+function makeSlider(name, val, low, high, onInput){
+
+    var div = d3.select("#menu")
+        .append("div")
+        .attr("class", "col-md-3 variableSlider")
+
+    div.append("label")
+        .attr("for", "name")
+        .text(name)
+
+    div.append("input")
+        .attr("type", "range")
+        .attr("id", name)
+        .attr("min", low)
+        .attr("max", high)
+        .attr("value", val)
+        .attr("step", (high - low)/100)
+        .attr("oninput", onInput)
 }
 
-var intro = svg.append("text")
-    .text(introMessage)
-    .attr("font-size", 45)
-    .attr("font-family", "optima")
-    .attr("text-anchor", "middle")
-    .attr("x", x(2.5))
-    .attr("y", y(2.01))
+// generates the string that goes into the onInput attribute of the input slider.
+function makeOnInput(params, equation, loc){
+    var call = "updateLine(xs, " + equation + ",[";
+
+    for (var i = 0; i < params.length; i++){
+        if (i > 0) call = call + ","; //put the parenthesis for the first but not anything else.
+        if (i == loc){ //put value in so the slider can give its value for the working parameter.
+            call = call + " value"
+        } else {
+            call = call + " params[" + i + "]"
+        }
+    }
+    call = call + " ])"
+    return call;
+}
+
+//runs through the parameters and takes the function name to generate the sliders for a given distribution.
+function drawSliders(params, functionName){
+    params.forEach(function(d,i){
+        makeSlider(d.name, d.startVal, d.slideLow, d.slideHigh, makeOnInput(params, functionName, i))
+    })
+}
+
+function initializeDist(dist){
+
+    d3.selectAll(".variableSlider").remove() //take out the old sliders.
+
+    var entry = theDistributions[dist] //grab the info for the distribution
+
+    y.domain([0, entry.yMax]) //update the scales.
+    x.domain(entry.xRange)
+
+    xs = _.range(entry.xRange[0], entry.xRange[1], (entry.xRange[1] - entry.xRange[0])/500) //redo the xs.
+    params = entry.starting; //update the parameters to the distributions.
+    drawSliders(entry.paramInfo, dist) //draw the sliders
+    updateLine(xs, entry.equation, params) //logistic shouldent by hard coded.
+}                                    //Find a way to store the equation in the javascript object.
+
+window.setTimeout(function(){
+    initializeDist("logistic") //Just added this so it starts up alright before adding the interface.
+    d3.selectAll(".distSelect").on("click", function(d){
+        initializeDist(d3.select(this).attr("id"))
+    })
+}, 800)
