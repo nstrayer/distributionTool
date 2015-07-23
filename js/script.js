@@ -57,7 +57,7 @@ var theDistributions = {
 
 var params = []; //initialize the parameters variable.
 
-var xs = _.range(0, 10, 10/500) //this will need to be made customizable by disribution.
+var xs = _.range(0, 10 + 10/500, 10/500) //this will need to be made customizable by disribution.
 
 var width   = parseInt(d3.select("#viz").style("width").slice(0, -2)) - 40,
     height  = $(window).height() - 150,
