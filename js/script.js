@@ -36,8 +36,8 @@ var theDistributions = {
     "logistic": {
         equation: function(x, params) { return logistic(x, params) },
         starting: [0.5, 0.3], //what we start them out at.
-        paramInfo: [{ "name": "Theta", "startVal": 0.5, "slideLow": .1, "slideHigh": 1 },
-                    { "name": "Mu", "startVal": 0.3, "slideLow": .01, "slideHigh": 1 }],
+        paramInfo: [{ "name": "Theta", "startVal": 0.5, "slideLow": .1,  "slideHigh": 1 },
+                    { "name": "Mu",    "startVal": 0.3, "slideLow": .01, "slideHigh": 1 }],
         xRange: [0.01, 6],
         yMax: 3.5
     },
@@ -59,7 +59,7 @@ var params = []; //initialize the parameters variable.
 
 var xs = _.range(0.01, 10, 9.99/500) //this will need to be made customizable by disribution.
 
-var width  = parseInt(d3.select("#viz").style("width").slice(0, -2)),
+var width  = parseInt(d3.select("#viz").style("width").slice(0, -2)) - 40,
     height = $(window).height() - 150;
 
 var svg = d3.select("#viz").append("svg")
@@ -175,8 +175,11 @@ function initializeDist(dist){
 }                                    //Find a way to store the equation in the javascript object.
 
 window.setTimeout(function(){
-    initializeDist("logistic") //Just added this so it starts up alright before adding the interface.
+    d3.select("#normal").style("color", "steelblue")
+    initializeDist("normal") //Just added this so it starts up alright before adding the interface.
     d3.selectAll(".distSelect").on("click", function(d){
         initializeDist(d3.select(this).attr("id"))
+        d3.selectAll(".distSelect").style("color", "black")
+        d3.select(this).style("color", "steelblue")
     })
 }, 800)
