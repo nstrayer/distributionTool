@@ -11,3 +11,16 @@ body {
   stroke: steelblue;
   stroke-width: 1.5px;
 }
+
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+
+.axis text {
+    font-family: optima;
+    font-size: 11px;
+}

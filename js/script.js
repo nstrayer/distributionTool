@@ -57,22 +57,23 @@ var theDistributions = {
 
 var params = []; //initialize the parameters variable.
 
-var xs = _.range(0.01, 10, 9.99/500) //this will need to be made customizable by disribution.
+var xs = _.range(0, 10, 9.99/500) //this will need to be made customizable by disribution.
 
 var width  = parseInt(d3.select("#viz").style("width").slice(0, -2)) - 40,
-    height = $(window).height() - 150;
+    height = $(window).height() - 150,
+    padding = 20;
 
 var svg = d3.select("#viz").append("svg")
     .attr("height", height)
     .attr("width", width)
 
 var x = d3.scale.linear()
-    .domain([0, 5])
-    .range([0, width]);
+    .domain([0, 10])
+    .range([padding + 5, width - padding]);
 
 var y = d3.scale.linear()
     .domain([0, 4])
-    .range([height, 0]);
+    .range([height - padding, padding]);
 
 var line = d3.svg.line()
     .interpolate("basis")
@@ -84,6 +85,18 @@ function aLine(xVal, equation, params){
     return _.map(xVal, function(x) {
         return { "x": x, "y": equation(x,params) }
  })
+}
+
+function updateAxes(){
+    d3.select("#xAxis")
+        .transition()
+        .duration(800)
+        .call(xAxis)
+
+    d3.select("#yAxis")
+        .transition()
+        .duration(800)
+        .call(yAxis)
 }
 
 //Update the already drawn line on the screen.
@@ -99,19 +112,6 @@ function updateLine(x, equation, p){
         .attr("class", "distribution")
         .attr("d", line);
 }
-
-var lineData = [aLine(xs, flat, params)]
-
-// The actual drawing part:
-svg.selectAll(".distribution")
-    .data(lineData)
-    .enter().append("path")
-    .attr("class", "distribution")
-    .attr("d", line)
-    .style("fill", "none")
-    .style("stroke-width", 2)
-    .style("stroke", "steelblue");
-
 
 //Work on getting the sliders to automatically generate:
 
@@ -167,6 +167,7 @@ function initializeDist(dist){
 
     y.domain([0, entry.yMax]) //update the scales.
     x.domain(entry.xRange)
+    updateAxes()
 
     xs = _.range(entry.xRange[0], entry.xRange[1], (entry.xRange[1] - entry.xRange[0])/500) //redo the xs.
     params = entry.starting; //update the parameters to the distributions.
@@ -174,9 +175,52 @@ function initializeDist(dist){
     updateLine(xs, entry.equation, params) //logistic shouldent by hard coded.
 }                                    //Find a way to store the equation in the javascript object.
 
+
+//--------------------------------------------------------------------------------------------------------------
+// Now we got all those functions and dirty work out of the way, let's actually kick off the viz.
+//--------------------------------------------------------------------------------------------------------------
+
+var lineData = [aLine(xs, flat, params)]
+
+var xAxis = d3.svg.axis()
+              .scale(x)
+              .ticks(4)
+              .orient("bottom");
+
+svg.append("g")
+    .attr("transform",  "translate( 0," + (height - 18) +")")
+    .attr("class", "axis")
+    .attr("id", "xAxis")
+    .call(xAxis)
+
+var yAxis = d3.svg.axis()
+              .scale(y)
+              .ticks(4)
+              .orient("left");
+
+svg.append("g")
+    .attr("transform",  "translate(" + 25 + "," + 2 +")")
+    .attr("class", "axis")
+    .attr("id", "yAxis")
+    .call(yAxis)
+
+// The actual drawing part:
+svg.selectAll(".distribution")
+    .data(lineData)
+    .enter().append("path")
+    .attr("class", "distribution")
+    .attr("d", line)
+    .style("fill", "none")
+    .style("stroke-width", 2)
+    .style("stroke", "steelblue");
+
+
+
+//Kick everything off.
 window.setTimeout(function(){
     d3.select("#normal").style("color", "steelblue")
-    initializeDist("normal") //Just added this so it starts up alright before adding the interface.
+    initializeDist("normal")
+
     d3.selectAll(".distSelect").on("click", function(d){
         initializeDist(d3.select(this).attr("id"))
         d3.selectAll(".distSelect").style("color", "black")
