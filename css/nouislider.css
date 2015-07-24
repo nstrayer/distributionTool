@@ -14,9 +14,8 @@
 	box-sizing: border-box;
 }
 .noUi-target {
-	position: absolute;
-	padding-left: 15px;
-	direction: rtl;
+	position: relative;
+	direction: ltr;
 }
 .noUi-base {
 	width: 100%;
@@ -34,6 +33,7 @@
 .noUi-handle {
 	position: relative;
 	z-index: 1;
+	text-align: center;
 }
 .noUi-stacking .noUi-handle {
 /* This class is applied to the lower origin when
@@ -126,7 +126,7 @@
 
 /* Handle stripes;
  */
-.noUi-handle:before,
+/*.noUi-handle:before,
 .noUi-handle:after {
 	content: "";
 	display: block;
@@ -149,7 +149,7 @@
 }
 .noUi-vertical .noUi-handle:after {
 	top: 17px;
-}
+}*/
 
 /* Disabled state;
  */

@@ -60,7 +60,7 @@ var params = []; //initialize the parameters variable.
 var xs = _.range(0, 10 + 10/500, 10/500) //this will need to be made customizable by disribution.
 
 var width   = parseInt(d3.select("#viz").style("width").slice(0, -2)) - 40,
-    height  = $(window).height() - 150,
+    height  = $(window).height() - 200,
     padding = 20;
 
 var svg = d3.select("#viz").append("svg")
@@ -113,12 +113,13 @@ function updateLine(x, equation, p){
         .attr("d", line);
 }
 
-//Generates a single slider.
+//Generates a single slider. I wish this was less intrecate. Ohh the sacrifices for mobile. 
 function makeSlider(name, val, low, high, functionName, loc){
 
     var div = d3.select("#menu")
         .append("div")
         .attr("class", "col-md-3 variableSlider")
+        .text(name)
         .append("div")
             .attr("id", name + "slider")
 
@@ -139,30 +140,20 @@ function makeSlider(name, val, low, high, functionName, loc){
         }
     });
 
-    //assign an update behavior.
-    function updateSlider(values, handle, unencoded){
+    var tipHandles = slider.getElementsByClassName('noUi-handle'),
+	   tooltips = [];
+
+    // Add divs to the slider handles.
+    for ( var i = 0; i < tipHandles.length; i++ ){
+    	tooltips[i] = document.createElement('div');
+    	tipHandles[i].appendChild(tooltips[i]);
+    }
+
+    slider.noUiSlider.on('update', function(values, handle, unencoded){ //what to do when the slider is moved.
         params[loc] = +values
-        // console.log(typeOf(functionName))
         updateLine(xs, functionName, params)
-    }
-
-    slider.noUiSlider.on('update', updateSlider);
-}
-
-// generates the string that goes into the onInput attribute of the input slider.
-function makeOnInput(params, equation, loc){
-    var call = "updateLine(xs, " + equation + ",[";
-
-    for (var i = 0; i < params.length; i++){
-        if (i > 0) call = call + ","; //put the parenthesis for the first but not anything else.
-        if (i == loc){ //put value in so the slider can give its value for the working parameter.
-            call = call + " value"
-        } else {
-            call = call + " params[" + i + "]"
-        }
-    }
-    call = call + " ])"
-    return call;
+        tooltips[handle].innerHTML = values[handle];
+    })
 }
 
 //runs through the parameters and takes the function name to generate the sliders for a given distribution.
@@ -190,7 +181,6 @@ function initializeDist(dist){
     drawSliders(entry.paramInfo, entry.equation) //draw the sliders
     updateLine(xs, entry.equation, params)
 }
-
 
 //--------------------------------------------------------------------------------------------------------------
 // Now we got all those functions and dirty work out of the way, let's actually kick off the viz.
