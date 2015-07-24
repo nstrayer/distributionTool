@@ -34,6 +34,7 @@
 	position: relative;
 	z-index: 1;
 	text-align: center;
+	line-height: 28px;
 }
 .noUi-stacking .noUi-handle {
 /* This class is applied to the lower origin when

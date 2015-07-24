@@ -113,15 +113,17 @@ function updateLine(x, equation, p){
         .attr("d", line);
 }
 
-//Generates a single slider. I wish this was less intrecate. Ohh the sacrifices for mobile. 
+//Generates a single slider. I wish this was less intrecate. Ohh the sacrifices for mobile.
 function makeSlider(name, val, low, high, functionName, loc){
 
     var div = d3.select("#menu")
         .append("div")
-        .attr("class", "col-md-3 variableSlider")
-        .text(name)
-        .append("div")
-            .attr("id", name + "slider")
+        .attr("class", "col-md-3 variableSlider");
+
+    div.append("p").attr("class", "variableName").text(name) //write the name of the variable.
+
+    div.append("div") //create a div to put the slider into.
+        .attr("id", name + "slider")
 
     //select the div we just created
     var slider = document.getElementById( name + "slider")
@@ -129,21 +131,14 @@ function makeSlider(name, val, low, high, functionName, loc){
     //draw the slider in it.
     noUiSlider.create(slider, {
         start: val,
-        range: {
-            min: low,
-            max: high
-        },
-        pips: {
-            mode: 'values',
-            values: [low, high],
-            density: 4
-        }
+        range: { min: low, max: high },
+        pips: { mode: 'values', values: [low, high], density: 4 }
     });
 
     var tipHandles = slider.getElementsByClassName('noUi-handle'),
 	   tooltips = [];
 
-    // Add divs to the slider handles.
+    // Add divs to the slider handles.I hate how clunky this is. Maybe submit a pr to the repo?
     for ( var i = 0; i < tipHandles.length; i++ ){
     	tooltips[i] = document.createElement('div');
     	tipHandles[i].appendChild(tooltips[i]);
