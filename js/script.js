@@ -43,9 +43,9 @@ var theDistributions = {
     },
     "normal": {
         equation: function(x, params) { return normal(x, params) },
-        starting: [0, 1], //what we start them out at.
+        starting: [0, 0.5], //what we start them out at.
         paramInfo: [{ "name": "Mu", "startVal": 0, "slideLow": -3, "slideHigh": 3 },
-                    { "name": "Sd", "startVal": 1, "slideLow": .1, "slideHigh": 3 }],
+                    { "name": "Sd", "startVal": 0.5, "slideLow": .1, "slideHigh": 2 }],
         xRange: [-4, 4],
         yMax: 1.5
     } //how far around the starting values we can go. //how far around the starting values we can go.
@@ -60,7 +60,7 @@ var params = []; //initialize the parameters variable.
 var xs = _.range(0, 10 + 10/500, 10/500) //this will need to be made customizable by disribution.
 
 var width   = parseInt(d3.select("#viz").style("width").slice(0, -2)) - 40,
-    height  = $(window).height() - 150,
+    height  = $(window).height() - 200,
     padding = 20;
 
 var svg = d3.select("#viz").append("svg")
@@ -113,49 +113,48 @@ function updateLine(x, equation, p){
         .attr("d", line);
 }
 
-//Work on getting the sliders to automatically generate:
-
-//Generates a single slider.
-function makeSlider(name, val, low, high, onInput){
+//Generates a single slider. I wish this was less intrecate. Ohh the sacrifices for mobile.
+function makeSlider(name, val, low, high, functionName, loc){
 
     var div = d3.select("#menu")
         .append("div")
-        .attr("class", "col-md-3 variableSlider")
+        .attr("class", "col-md-3 variableSlider");
 
-    div.append("label")
-        .attr("for", "name")
-        .text(name)
+    div.append("p").attr("class", "variableName").text(name) //write the name of the variable.
 
-    div.append("input")
-        .attr("type", "range")
-        .attr("id", name)
-        .attr("min", low)
-        .attr("max", high)
-        .attr("value", val)
-        .attr("step", (high - low)/100)
-        .attr("oninput", onInput)
-}
+    div.append("div") //create a div to put the slider into.
+        .attr("id", name + "slider")
 
-// generates the string that goes into the onInput attribute of the input slider.
-function makeOnInput(params, equation, loc){
-    var call = "updateLine(xs, " + equation + ",[";
+    //select the div we just created
+    var slider = document.getElementById( name + "slider")
 
-    for (var i = 0; i < params.length; i++){
-        if (i > 0) call = call + ","; //put the parenthesis for the first but not anything else.
-        if (i == loc){ //put value in so the slider can give its value for the working parameter.
-            call = call + " value"
-        } else {
-            call = call + " params[" + i + "]"
-        }
+    //draw the slider in it.
+    noUiSlider.create(slider, {
+        start: val,
+        range: { min: low, max: high },
+        pips: { mode: 'values', values: [low, high], density: 4 }
+    });
+
+    var tipHandles = slider.getElementsByClassName('noUi-handle'),
+	   tooltips = [];
+
+    // Add divs to the slider handles.I hate how clunky this is. Maybe submit a pr to the repo?
+    for ( var i = 0; i < tipHandles.length; i++ ){
+    	tooltips[i] = document.createElement('div');
+    	tipHandles[i].appendChild(tooltips[i]);
     }
-    call = call + " ])"
-    return call;
+
+    slider.noUiSlider.on('update', function(values, handle, unencoded){ //what to do when the slider is moved.
+        params[loc] = +values
+        updateLine(xs, functionName, params)
+        tooltips[handle].innerHTML = values[handle];
+    })
 }
 
 //runs through the parameters and takes the function name to generate the sliders for a given distribution.
 function drawSliders(params, functionName){
     params.forEach(function(d,i){
-        makeSlider(d.name, d.startVal, d.slideLow, d.slideHigh, makeOnInput(params, functionName, i))
+        makeSlider(d.name, d.startVal, d.slideLow, d.slideHigh, functionName, i)
     })
 }
 
@@ -174,10 +173,9 @@ function initializeDist(dist){
         step = (end - start)/500
     xs = _.range(start, end + step , step) //redo the xs. Adding a step brings it to the right point because of how range works.
     params = entry.starting; //update the parameters to the distributions.
-    drawSliders(entry.paramInfo, dist) //draw the sliders
+    drawSliders(entry.paramInfo, entry.equation) //draw the sliders
     updateLine(xs, entry.equation, params)
 }
-
 
 //--------------------------------------------------------------------------------------------------------------
 // Now we got all those functions and dirty work out of the way, let's actually kick off the viz.
@@ -229,4 +227,4 @@ window.setTimeout(function(){
         d3.selectAll(".distSelect").style("color", "black")
         d3.select(this).style("color", "steelblue")
     })
-}, 800)
+}, 10)
