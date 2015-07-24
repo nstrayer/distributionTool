@@ -43,9 +43,9 @@ var theDistributions = {
     },
     "normal": {
         equation: function(x, params) { return normal(x, params) },
-        starting: [0, 1], //what we start them out at.
+        starting: [0, 0.5], //what we start them out at.
         paramInfo: [{ "name": "Mu", "startVal": 0, "slideLow": -3, "slideHigh": 3 },
-                    { "name": "Sd", "startVal": 1, "slideLow": .1, "slideHigh": 3 }],
+                    { "name": "Sd", "startVal": 0.5, "slideLow": .1, "slideHigh": 2 }],
         xRange: [-4, 4],
         yMax: 1.5
     } //how far around the starting values we can go. //how far around the starting values we can go.
@@ -113,27 +113,40 @@ function updateLine(x, equation, p){
         .attr("d", line);
 }
 
-//Work on getting the sliders to automatically generate:
-
 //Generates a single slider.
-function makeSlider(name, val, low, high, onInput){
+function makeSlider(name, val, low, high, functionName, loc){
 
     var div = d3.select("#menu")
         .append("div")
         .attr("class", "col-md-3 variableSlider")
+        .append("div")
+            .attr("id", name + "slider")
 
-    div.append("label")
-        .attr("for", "name")
-        .text(name)
+    //select the div we just created
+    var slider = document.getElementById( name + "slider")
 
-    div.append("input")
-        .attr("type", "range")
-        .attr("id", name)
-        .attr("min", low)
-        .attr("max", high)
-        .attr("value", val)
-        .attr("step", (high - low)/100)
-        .attr("oninput", onInput)
+    //draw the slider in it.
+    noUiSlider.create(slider, {
+        start: val,
+        range: {
+            min: low,
+            max: high
+        },
+        pips: {
+            mode: 'values',
+            values: [low, high],
+            density: 4
+        }
+    });
+
+    //assign an update behavior.
+    function updateSlider(values, handle, unencoded){
+        params[loc] = +values
+        // console.log(typeOf(functionName))
+        updateLine(xs, functionName, params)
+    }
+
+    slider.noUiSlider.on('update', updateSlider);
 }
 
 // generates the string that goes into the onInput attribute of the input slider.
@@ -155,7 +168,7 @@ function makeOnInput(params, equation, loc){
 //runs through the parameters and takes the function name to generate the sliders for a given distribution.
 function drawSliders(params, functionName){
     params.forEach(function(d,i){
-        makeSlider(d.name, d.startVal, d.slideLow, d.slideHigh, makeOnInput(params, functionName, i))
+        makeSlider(d.name, d.startVal, d.slideLow, d.slideHigh, functionName, i)
     })
 }
 
@@ -174,7 +187,7 @@ function initializeDist(dist){
         step = (end - start)/500
     xs = _.range(start, end + step , step) //redo the xs. Adding a step brings it to the right point because of how range works.
     params = entry.starting; //update the parameters to the distributions.
-    drawSliders(entry.paramInfo, dist) //draw the sliders
+    drawSliders(entry.paramInfo, entry.equation) //draw the sliders
     updateLine(xs, entry.equation, params)
 }
 
@@ -229,4 +242,4 @@ window.setTimeout(function(){
         d3.selectAll(".distSelect").style("color", "black")
         d3.select(this).style("color", "steelblue")
     })
-}, 800)
+}, 10)
