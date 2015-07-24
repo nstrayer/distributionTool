@@ -229,4 +229,4 @@ window.setTimeout(function(){
         d3.selectAll(".distSelect").style("color", "black")
         d3.select(this).style("color", "steelblue")
     })
-}, 800)
+}, 10)
