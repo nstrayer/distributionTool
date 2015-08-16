@@ -178,6 +178,7 @@ function initializeDist(dist){
     drawSliders(entry.paramInfo, entry.equation) //draw the sliders
     updateLine(xs, entry.equation, params)
     newDescription("descrips/" + entry.info)
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub,"explain"]);
 }
 
 //--------------------------------------------------------------------------------------------------------------
