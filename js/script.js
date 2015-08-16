@@ -178,7 +178,8 @@ function initializeDist(dist){
     drawSliders(entry.paramInfo, entry.equation) //draw the sliders
     updateLine(xs, entry.equation, params)
     newDescription("descrips/" + entry.info)
-    MathJax.Hub.Queue(["Typeset",MathJax.Hub,"explain"]);
+    console.log("running the thing again.")
+    // MathJax.Hub.Queue(["Typeset",MathJax.Hub,"explain"]);
 }
 
 //--------------------------------------------------------------------------------------------------------------
@@ -219,18 +220,14 @@ svg.selectAll(".distribution")
     .style("stroke-width", 2)
     .style("stroke", "steelblue");
 
-function changeDescription(txt){
-    // d3.select("#explain").html(txt)
-    var w =$("#explain").width()
-    var h = height + 10
-    d3.select("#explain").html("<iframe src = " + txt + " width = " + w + " height =" + h + "></iframe>")
-}
 
 function newDescription(f){
     d3.text(f, function(d){
         d3.select("#explain").html(d)
     })
-
+    
+    //Make sure that the text has loaded before running the re-render.
+    window.setTimeout(function(){ MathJax.Hub.Queue(["Typeset",MathJax.Hub]) }, 50 )
 }
 
 
