@@ -11,14 +11,23 @@ var flat = function(x, params){
     return .001
 }
 
-//Logistic Distribution, new version.
-var logistic = function(x, params) {
+var logistic = function(x, params){
 
-    var t = params[0],
-        m = params[1];
+    var m = params[0],
+        s = params[1];
 
-    var y =  (1 / (Math.sqrt(2 * Math.PI) * t)) * (1 / x) *
-        Math.exp(-Math.pow((Math.log(x) - m), 2) / (2 * Math.pow(t, 2)));
+    var eFun = Math.exp(-(x - m)/(s))
+    var y = eFun / (s * Math.pow((1 + eFun), 2))
+    return y;
+}
+
+var logisticCDF = function(x, params){
+
+    var m = params[0],
+        s = params[1];
+
+    var eFun = Math.exp(-(x - m)/(s))
+    var y = 1 / ( 1 + eFun)
     return y;
 }
 
@@ -35,11 +44,12 @@ var normal = function(x, params){
 var theDistributions = {
     "logistic": {
         equation: function(x, params) { return logistic(x, params) },
+        cdf: function(x, params){ return logisticCDF(x,params)},
         starting: [0.5, 0.3], //what we start them out at.
-        paramInfo: [{ "name": "Theta", "startVal": 0.5, "slideLow": .1,  "slideHigh": 1 },
-                    { "name": "Mu",    "startVal": 0.3, "slideLow": .01, "slideHigh": 1 }],
-        xRange: [0.01, 6],
-        yMax: 3.5,
+        paramInfo: [{ "name": "Mu","startVal": 1, "slideLow": .01, "slideHigh": 10 },
+                    { "name": "s", "startVal": 0.5, "slideLow": .1,  "slideHigh": 1 }],
+        xRange: [-4, 10],
+        yMax: 1,
         info: "logistic.html"
     },
     "normal": {
@@ -225,7 +235,7 @@ function newDescription(f){
     d3.text(f, function(d){
         d3.select("#explain").html(d)
     })
-    
+
     //Make sure that the text has loaded before running the re-render.
     window.setTimeout(function(){ MathJax.Hub.Queue(["Typeset",MathJax.Hub]) }, 50 )
 }
