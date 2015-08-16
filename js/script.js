@@ -40,7 +40,7 @@ var theDistributions = {
                     { "name": "Mu",    "startVal": 0.3, "slideLow": .01, "slideHigh": 1 }],
         xRange: [0.01, 6],
         yMax: 3.5,
-        info: "http://mathworld.wolfram.com/LogisticDistribution.html"
+        info: "logistic.html"
     },
     "normal": {
         equation: function(x, params) { return normal(x, params) },
@@ -49,7 +49,7 @@ var theDistributions = {
                     { "name": "Sd", "startVal": 0.5, "slideLow": .1, "slideHigh": 2 }],
         xRange: [-4, 4],
         yMax: 1.5,
-        info: "http://mathworld.wolfram.com/NormalDistribution.html"
+        info: "normal.html"
     } //how far around the starting values we can go. //how far around the starting values we can go.
 }
 
@@ -177,7 +177,7 @@ function initializeDist(dist){
     params = entry.starting; //update the parameters to the distributions.
     drawSliders(entry.paramInfo, entry.equation) //draw the sliders
     updateLine(xs, entry.equation, params)
-    changeDescription(entry.info)
+    newDescription("descrips/" + entry.info)
 }
 
 //--------------------------------------------------------------------------------------------------------------
@@ -224,6 +224,14 @@ function changeDescription(txt){
     var h = height + 10
     d3.select("#explain").html("<iframe src = " + txt + " width = " + w + " height =" + h + "></iframe>")
 }
+
+function newDescription(f){
+    d3.text(f, function(d){
+        d3.select("#explain").html(d)
+    })
+
+}
+
 
 //Kick everything off.
 window.setTimeout(function(){
