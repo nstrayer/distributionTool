@@ -17,6 +17,12 @@
     <script type="text/javascript" src="js/libs/jquery.min.js"></script>
     <script src="js/libs/d3.min.js"></script>
     <script src="js/libs/underscore.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+          tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+        });
+    </script>
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -29,14 +35,16 @@
 
       <div id = "header">
           <!-- <h1>Distributions</h1> -->
-          <h2>
+          <h2>Choose Distribution:
               <strong id = "normal" class = "distSelect"> Normal </strong>,
               <strong id = "logistic" class = "distSelect"> Logistic </strong>
           </h2>
 
       </div>
-      <div id = "viz" class = "col-md-12 col-sm-12"></div>
-      <div id = "menu"></div>
+      <div id = "viz" class = "col-md-8 col-sm-12"></div>
+      <div id = "explain" class = "col-md-4 col-sm-12">
+      Hello there, world.</div>
+      <div id = "menu" class = "col-sm-12"></div>
 
       <script src = "js/script.js"></script>
       <script src = "js/libs/nouislider.min.js"></script>
