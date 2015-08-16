@@ -39,7 +39,8 @@ var theDistributions = {
         paramInfo: [{ "name": "Theta", "startVal": 0.5, "slideLow": .1,  "slideHigh": 1 },
                     { "name": "Mu",    "startVal": 0.3, "slideLow": .01, "slideHigh": 1 }],
         xRange: [0.01, 6],
-        yMax: 3.5
+        yMax: 3.5,
+        info: "http://mathworld.wolfram.com/LogisticDistribution.html"
     },
     "normal": {
         equation: function(x, params) { return normal(x, params) },
@@ -47,7 +48,8 @@ var theDistributions = {
         paramInfo: [{ "name": "Mu", "startVal": 0, "slideLow": -3, "slideHigh": 3 },
                     { "name": "Sd", "startVal": 0.5, "slideLow": .1, "slideHigh": 2 }],
         xRange: [-4, 4],
-        yMax: 1.5
+        yMax: 1.5,
+        info: "http://mathworld.wolfram.com/NormalDistribution.html"
     } //how far around the starting values we can go. //how far around the starting values we can go.
 }
 
@@ -175,6 +177,7 @@ function initializeDist(dist){
     params = entry.starting; //update the parameters to the distributions.
     drawSliders(entry.paramInfo, entry.equation) //draw the sliders
     updateLine(xs, entry.equation, params)
+    changeDescription(entry.info)
 }
 
 //--------------------------------------------------------------------------------------------------------------
@@ -215,7 +218,12 @@ svg.selectAll(".distribution")
     .style("stroke-width", 2)
     .style("stroke", "steelblue");
 
-
+function changeDescription(txt){
+    // d3.select("#explain").html(txt)
+    var w =$("#explain").width()
+    var h = height + 10
+    d3.select("#explain").html("<iframe src = " + txt + " width = " + w + " height =" + h + "></iframe>")
+}
 
 //Kick everything off.
 window.setTimeout(function(){
