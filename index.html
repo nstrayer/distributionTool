@@ -35,11 +35,18 @@
 
       <div id = "header">
           <!-- <h1>Distributions</h1> -->
-          <h2>Choose Distribution:
-              <strong id = "normal" class = "distSelect"> Normal </strong>,
-              <strong id = "logistic" class = "distSelect"> Logistic </strong>
-          </h2>
-
+          <div id="dists" class = "col-md-5 col-sm-8">
+              <h2>Choose Distribution:
+                  <strong id="normal" class="distSelect"> Normal </strong>,
+                  <strong id="logistic" class="distSelect"> Logistic </strong>
+              </h2>
+          </div>
+          <div id="pdfOrCdf" class = "col-md-4 col-sm-8">
+              <h2>Choose Type:
+                  <strong id="pdf" class="typeSelect"> PDF </strong>,
+                  <strong id="cdf" class="typeSelect"> CDF </strong>
+              </h2>
+          </div>
       </div>
       <div id = "viz" class = "col-md-8 col-sm-12"></div>
       <div id = "explain" class = "col-md-4 col-sm-12">
