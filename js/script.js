@@ -54,6 +54,7 @@ var theDistributions = {
     },
     "normal": {
         pdf: function(x, params) { return normal(x, params) },
+        cdf: function(x, params) { return flat(x, params) },
         starting: [0, 0.5], //what we start them out at.
         paramInfo: [{ "name": "Mu", "startVal": 0, "slideLow": -3, "slideHigh": 3 },
                     { "name": "Sd", "startVal": 0.5, "slideLow": .1, "slideHigh": 2 }],
@@ -248,6 +249,8 @@ function newDescription(f){
 window.setTimeout(function(){
 
     d3.select("#normal").style("color", "steelblue")
+    d3.select("#pdf").style("color", "steelblue")
+
     initializeDist("normal")
 
     d3.selectAll(".distSelect").on("click", function(d){
