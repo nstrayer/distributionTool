@@ -11,14 +11,23 @@ var flat = function(x, params){
     return .001
 }
 
-//Logistic Distribution, new version.
-var logistic = function(x, params) {
+var logistic = function(x, params){
 
-    var t = params[0],
-        m = params[1];
+    var m = params[0],
+        s = params[1];
 
-    var y =  (1 / (Math.sqrt(2 * Math.PI) * t)) * (1 / x) *
-        Math.exp(-Math.pow((Math.log(x) - m), 2) / (2 * Math.pow(t, 2)));
+    var eFun = Math.exp(-(x - m)/(s))
+    var y = eFun / (s * Math.pow((1 + eFun), 2))
+    return y;
+}
+
+var logisticCDF = function(x, params){
+
+    var m = params[0],
+        s = params[1];
+
+    var eFun = Math.exp(-(x - m)/(s))
+    var y = 1 / ( 1 + eFun)
     return y;
 }
 
@@ -34,16 +43,17 @@ var normal = function(x, params){
 //Where we store all the neccesary info about the given distributions.
 var theDistributions = {
     "logistic": {
-        equation: function(x, params) { return logistic(x, params) },
+        pdf: function(x, params) { return logistic(x, params) },
+        cdf: function(x, params){ return logisticCDF(x,params)},
         starting: [0.5, 0.3], //what we start them out at.
-        paramInfo: [{ "name": "Theta", "startVal": 0.5, "slideLow": .1,  "slideHigh": 1 },
-                    { "name": "Mu",    "startVal": 0.3, "slideLow": .01, "slideHigh": 1 }],
-        xRange: [0.01, 6],
-        yMax: 3.5,
+        paramInfo: [{ "name": "Mu","startVal": 1, "slideLow": .01, "slideHigh": 10 },
+                    { "name": "s", "startVal": 0.5, "slideLow": .1,  "slideHigh": 1 }],
+        xRange: [-4, 10],
+        yMax: 1,
         info: "logistic.html"
     },
     "normal": {
-        equation: function(x, params) { return normal(x, params) },
+        pdf: function(x, params) { return normal(x, params) },
         starting: [0, 0.5], //what we start them out at.
         paramInfo: [{ "name": "Mu", "startVal": 0, "slideLow": -3, "slideHigh": 3 },
                     { "name": "Sd", "startVal": 0.5, "slideLow": .1, "slideHigh": 2 }],
@@ -63,7 +73,9 @@ var xs = _.range(0, 10 + 10/500, 10/500) //this will need to be made customizabl
 
 var width   = parseInt(d3.select("#viz").style("width").slice(0, -2)) - 40,
     height  = $(window).height() - 200,
-    padding = 20;
+    padding = 20,
+    curType = "pdf",
+    curDist = "normal"; //this will break if you toggle pdf cdf before updating dist.
 
 var svg = d3.select("#viz").append("svg")
     .attr("height", height)
@@ -83,9 +95,9 @@ var line = d3.svg.line()
     .y(function(d) { return y(d.y); });
 
 //Convert x and the function into a format d3 likes.
-function aLine(xVal, equation, params){
+function aLine(xVal, func, params){
     return _.map(xVal, function(x) {
-        return { "x": x, "y": equation(x,params) }
+        return { "x": x, "y": func(x,params) }
  })
 }
 
@@ -102,7 +114,7 @@ function updateAxes(){
 }
 
 //Update the already drawn line on the screen.
-function updateLine(x, equation, p){
+function updateLine(x, equation, p, pdf){
     params = p //update the params variable globaly.
 
     var newLine = [aLine(x, equation, params)]
@@ -148,7 +160,7 @@ function makeSlider(name, val, low, high, functionName, loc){
 
     slider.noUiSlider.on('update', function(values, handle, unencoded){ //what to do when the slider is moved.
         params[loc] = +values
-        updateLine(xs, functionName, params)
+        updateLine(xs, theDistributions[curDist][curType], params)
         tooltips[handle].innerHTML = values[handle];
     })
 }
@@ -160,23 +172,24 @@ function drawSliders(params, functionName){
     })
 }
 
-function initializeDist(dist){
+function initializeDist(){
 
     d3.selectAll(".variableSlider").remove() //take out the old sliders.
 
-    var entry = theDistributions[dist] //grab the info for the distribution
+    var entry = theDistributions[curDist] //grab the info for the distribution
+    console.log(entry)
 
     y.domain([0, entry.yMax]) //update the scales.
     x.domain(entry.xRange)
     updateAxes()
 
     var start = entry.xRange[0],
-        end = entry.xRange[1];
-        step = (end - start)/500
+        end   = entry.xRange[1],
+        step  = (end - start)/500;
     xs = _.range(start, end + step , step) //redo the xs. Adding a step brings it to the right point because of how range works.
     params = entry.starting; //update the parameters to the distributions.
-    drawSliders(entry.paramInfo, entry.equation) //draw the sliders
-    updateLine(xs, entry.equation, params)
+    drawSliders(entry.paramInfo, entry[curType]) //draw the sliders
+    updateLine(xs, entry[curType], params)
     newDescription("descrips/" + entry.info)
     console.log("running the thing again.")
     // MathJax.Hub.Queue(["Typeset",MathJax.Hub,"explain"]);
@@ -225,7 +238,7 @@ function newDescription(f){
     d3.text(f, function(d){
         d3.select("#explain").html(d)
     })
-    
+
     //Make sure that the text has loaded before running the re-render.
     window.setTimeout(function(){ MathJax.Hub.Queue(["Typeset",MathJax.Hub]) }, 50 )
 }
@@ -233,12 +246,23 @@ function newDescription(f){
 
 //Kick everything off.
 window.setTimeout(function(){
+
     d3.select("#normal").style("color", "steelblue")
     initializeDist("normal")
 
     d3.selectAll(".distSelect").on("click", function(d){
-        initializeDist(d3.select(this).attr("id"))
+
+        curDist = d3.select(this).attr("id")
+
+        initializeDist()
         d3.selectAll(".distSelect").style("color", "black")
+        d3.select(this).style("color", "steelblue")
+    })
+    d3.selectAll(".typeSelect").on("click", function(d){
+
+        curType = d3.select(this).attr("id")
+        updateLine(xs, theDistributions[curDist][curType], params)
+        d3.selectAll(".typeSelect").style("color", "black")
         d3.select(this).style("color", "steelblue")
     })
 }, 10)
